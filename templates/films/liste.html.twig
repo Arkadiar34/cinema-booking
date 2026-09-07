@@ -1,0 +1,86 @@
+<!-- templates/films/liste.html.twig -->
+{% extends 'base.html.twig' %}
+
+{% block title %}Tous les films
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="/css/films.css">
+{% endblock %}
+
+{% block contenu %}
+	<div class="page-header">
+		<h1>Tous nos films</h1>
+		<p>{{ films | length }}
+			film
+			{% if films | length > 1 %}s
+			{% endif %}
+			disponible
+			{% if films | length > 1 %}s
+			{% endif %}
+		</p>
+	</div>
+
+	<!-- Filtres -->
+	<aside class="filtres">
+		<h3>Filtrer par</h3>
+
+		<div class="filtre-groupe">
+			<h4>Genre</h4>
+			<ul>
+				{% for genre in genres %}
+					<li>
+						<label>
+							<input type="checkbox" name="genre[]" value="{{ genre.id }}">
+							{{ genre.nom }}
+						</label>
+					</li>
+				{% endfor %}
+			</ul>
+		</div>
+
+		<div class="filtre-groupe">
+			<h4>Année</h4>
+			<select name="annee">
+				<option value="">Toutes</option>
+				{% for annee in 2024..2020 %}
+					<option value="{{ annee }}">{{ annee }}</option>
+				{% endfor %}
+			</select>
+		</div>
+	</aside>
+
+	<!-- Grille de films -->
+	<div class="films-container">
+		<div class="films-grid">
+			{% for film in films %}
+				{% include 'composants/card-film.html.twig' with {'film': film} %}
+			{% else %}
+				<div class="aucun-resultat">
+					<p>Aucun film ne correspond à vos critères.</p>
+				</div>
+			{% endfor %}
+		</div>
+
+		<!-- Pagination -->
+		{% if pageMax > 1 %}
+			<nav class="pagination">
+				{% if pageActuelle > 1 %}
+					<a href="?page={{ pageActuelle - 1 }}">« Précédent</a>
+				{% endif %}
+
+				{% for numero in 1..pageMax %}
+					<a href="?page={{ numero }}" class="{% if numero == pageActuelle %}active{% endif %}">
+						{{ numero }}
+					</a>
+				{% endfor %}
+
+				{% if pageActuelle < pageMax %}
+					<a href="?page={{ pageActuelle + 1 }}">Suivant »</a>
+				{% endif %}
+			</nav>
+		{% endif %}
+	</div>
+{% endblock %}
+

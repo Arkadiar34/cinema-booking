@@ -1,0 +1,39 @@
+<!-- templates/films/detail.html.twig -->
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{{ film.titre }}
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="/css/film-detail.css">
+{% endblock %}
+
+{% block contenu %}
+<article class="film-detail">
+	<div class="film-header">
+		<div class="film-affiche">
+			{% if film.affiche %}
+				<img src="{{ film.affiche }}" alt="{{ film.titre }}">
+			{% else %}
+				<div class="affiche-placeholder">Aucune affiche</div>
+			{% endif %}
+		</div>
+
+		<div class="film-info">
+			<h1>{{ film.titre }}</h1>
+
+			<div class="film-meta">
+				<span class="annee">{{ film.annee }}</span>
+				<span class="duree">{{ film.duree }}
+					min</span>
+				<span class="genre">{{ film.genre }}</span>
+			</div>
+
+			{% if film.note %}
+				<div class="note">
+					<span class="etoiles">
+						{% for i in 1..5 %}
+							{% if i <= film.note %}
+

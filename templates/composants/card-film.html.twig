@@ -1,0 +1,21 @@
+<!-- templates/composants/card-film.html.twig -->
+<article class="film-card">
+    {% if film.affiche %}
+        <img src="{{ film.affiche }}" 
+             alt="{{ film.titre }}">
+    {% endif %}
+    
+    <div class="film-info">
+        <h3>{{ film.titre }}</h3>
+        <p class="realisateur">
+            Par {{ film.realisateur }}
+        </p>
+        <p class="synopsis">
+            {{ film.synopsis | truncate(100) }}
+        </p>
+        <a href="/film/{{ film.id }}" 
+           class="btn">
+            Voir les détails
+        </a>
+    </div>
+</article>

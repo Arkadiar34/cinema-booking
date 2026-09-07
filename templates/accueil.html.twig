@@ -1,0 +1,26 @@
+<!-- templates/accueil.html.twig -->
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	Accueil -
+	{{ parent() }}
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="/css/accueil.css">
+{% endblock %}
+
+{% block contenu %}
+	<h1>Bienvenue sur notre site cinéma</h1>
+
+	<section class="films-affiche">
+		<h2>Films à laffiche</h2>
+		{% for film in filmsAffiche %}
+			<article>
+				<h3>{{ film.titre }}</h3>
+				<p>{{ film.synopsis | truncate(150) }}</p>
+			</article>
+		{% endfor %}
+	</section>
+{% endblock %}
