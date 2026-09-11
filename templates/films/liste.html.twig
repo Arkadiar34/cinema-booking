@@ -1,8 +1,88 @@
-<!-- templates/films/liste.html.twig -->
+{# templates/films/liste.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Tous les films
+{% block title %}Liste des films{% endblock %}
+
+{% block body %}
+	<div class="container py-5">
+
+		<div class="d-flex align-items-baseline justify-content-between mb-4">
+			<h1 class="mb-0">Films à l'affiche</h1>
+			<span class="text-body-secondary">{{ films|length }} film{{ films|length > 1 ? 's' }}</span>
+		</div>
+
+		{# Formulaire de recherche #}
+		<div class="card border-0 bg-body-tertiary mb-5">
+			<div class="card-body">
+				{{ form_start(searchForm, {'attr': {'class': 'row g-3 align-items-end justify-content-center'}}) }}
+				<div class="col-md-3">{{ form_row(searchForm.titre) }}</div>
+				<div class="col-md-2">{{ form_row(searchForm.genre) }}</div>
+				<div class="col-md-2">{{ form_row(searchForm.dateSeance) }}</div>
+				<div class="col-md-2">{{ form_row(searchForm.salle) }}</div>
+				<div class="col-md-2 d-grid mb-3">
+					<button type="submit" class="btn btn-danger">Rechercher</button>
+				</div>
+				{{ form_end(searchForm) }}
+			</div>
+		</div>
+
+		{# Résultats #}
+		<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+			{% for film in films %}
+				<div class="col">
+					<article class="card h-100 shadow-sm">
+						<img src="{{ film.affiche }}" class="card-img-top" alt="Affiche de {{ film.titre }}">
+
+						<div class="card-body d-flex flex-column">
+							<h2 class="card-title h5">{{ film.titre }}</h2>
+
+							<div class="mb-3">
+								{% if film.genre %}
+									<span class="badge text-bg-danger">{{ film.genre }}</span>
+								{% endif %}
+								<span class="badge text-bg-secondary">{{ film.duree }} min</span>
+								{% if film.note %}
+									<span class="badge text-bg-warning">{{ film.note }}/10</span>
+								{% endif %}
+							</div>
+
+							<p class="card-text small text-body-secondary">{{ film.synopsis }}</p>
+
+							<div class="mt-auto pt-3 border-top">
+								<h3 class="h6 text-uppercase text-body-secondary">Séances</h3>
+								<ul class="list-unstyled small mb-0">
+									{% for seance in film.seances %}
+										<li class="d-flex justify-content-between py-1">
+											<span>{{ seance.dateHeure|date('d/m - H:i') }}</span>
+											<span class="text-body-secondary">
+												{{ seance.salle.nom|default('Salle ' ~ seance.salle.numero) }} / {{ seance.salle.capacite ~ ' Places' }} / {{ seance.langue }}
+											</span>
+										</li>
+									{% else %}
+										<li class="text-body-secondary">Aucune séance programmée</li>
+									{% endfor %}
+								</ul>
+							</div>
+						</div>
+					</article>
+				</div>
+			{% else %}
+				<div class="col-12">
+					<p class="text-center text-body-secondary py-5 mb-0">Aucun film ne correspond à votre recherche.</p>
+				</div>
+			{% endfor %}
+		</div>
+
+	</div>
 {% endblock %}
+
+
+
+
+{# <!-- templates/films/liste.html.twig -->
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des films{% endblock %}
 
 {% block stylesheets %}
 	{{ parent() }}
@@ -12,12 +92,12 @@
 {% block contenu %}
 	<div class="page-header">
 		<h1>Tous nos films</h1>
-		<p>{{ films | length }}
+		<p>{{ films|length }}
 			film
-			{% if films | length > 1 %}s
+			{% if films|length > 1 %}s
 			{% endif %}
 			disponible
-			{% if films | length > 1 %}s
+			{% if films|length > 1 %}s
 			{% endif %}
 		</p>
 	</div>
@@ -84,3 +164,4 @@
 	</div>
 {% endblock %}
 
+ #}
