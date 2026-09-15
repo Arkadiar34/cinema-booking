@@ -18,47 +18,36 @@ final class CinemaController extends AbstractController
             'titre' => 'Accueil Cinéma',
         ]);
     }
-    /* #[Route('/films', name: 'cinema_films', methods: ['GET'])]
-    public function liste(): Response {} */
 
     #[Route('/films', name: 'films_list')]
     public function filmList(
-        FilmRepository $filmRepository,
         Request $request,
+        FilmRepository $filmRepository,
     ): Response {
-        $filmGenre = $filmRepository->findDistinctGenres();//Je requete mes genre de film ici pour que la liste soit toujours a jours de ce qui est dispo 
-        $form = $this->createForm(FilmSearchType::class,null,['genres' => $filmGenre]);
+        $limit = 12;
+        $page = $request->query->getInt('page', 1);
+        //Je requete mes genre de film ici pour que la liste soit toujours a jours de ce qui est dispo
+        $filmGenre = $filmRepository->findDistinctGenres();
+        $form = $this->createForm(FilmSearchType::class, null, ['genres' => $filmGenre]);
         $form->handleRequest($request);
+
+        //je déclare critère vide pour éviter de casser la liste
+        $criteria = [];
         if ($form->isSubmitted() && $form->isValid()) {
             $criteria = $form->getData();
-            
-            $films = $filmRepository->findAllWithSeances($criteria);
-        } else {
-            $films = $filmRepository->findAllWithSeances();
         }
+
+        //j'inclus mes critère dans la pagination
+        $paginator = $filmRepository->findBySearchCriteria($criteria, $page, $limit);
+        $totalPages = ceil(count($paginator) / $limit);
+
         return $this->render('films/liste.html.twig', [
             'titre' => 'Liste des Films',
             'searchForm' => $form,
-            'films' => $films,
-            'genre' => $filmGenre
+            'films' => $paginator,
+            'genre' => $filmGenre,
+            'totalPages' => $totalPages,
+            'pageActuelle' => $page,
         ]);
     }
-
-    /*     #[Route('/films/search', name: 'app_films_search')]
-    public function search(
-        Request $request,
-        FilmRepository $filmRepository
-    ): Response {
-        $form = $this->createForm(FilmSearchType::class);
-        $form->handleRequest($request);
-        $films = [];
-        if ($form->isSubmitted() && $form->isValid()) {
-            $criteria = $form->getData();
-            $films = $filmRepository->findBySearchCriteria($criteria);
-        }
-        return $this->render('film/search.html.twig', [
-            'form' => $form,
-            'films' => $films,
-        ]);
-    } */
 }

@@ -8,6 +8,7 @@
 
 		<div class="d-flex align-items-baseline justify-content-between mb-4">
 			<h1 class="mb-0">Films à l'affiche</h1>
+				{#Compteur de film en haut de page #}
 			<span class="text-body-secondary">{{ films|length }} film{{ films|length > 1 ? 's' }}</span>
 		</div>
 
@@ -62,6 +63,17 @@
 										<li class="text-body-secondary">Aucune séance programmée</li>
 									{% endfor %}
 								</ul>
+
+								{# Bouton de reservation, desactiver si le film n'a aucune seance #}
+								<div class="d-grid mt-3">
+									{% if film.seances|length > 0 %}
+										<a href="{{ path('app_reservation', {'film': film.id}) }}" class="btn btn-danger">
+											Réserver
+										</a>
+									{% else %}
+										<span class="btn btn-danger disabled" aria-disabled="true">Réserver</span>
+									{% endif %}
+								</div>
 							</div>
 						</div>
 					</article>
@@ -72,96 +84,33 @@
 				</div>
 			{% endfor %}
 		</div>
+		{# Pagination #}
+		{% if totalPages > 1 %}
+			<nav class="mt-5" aria-label="Pagination des films">
+				<ul class="pagination justify-content-center mb-0">
 
-	</div>
-{% endblock %}
-
-
-
-
-{# <!-- templates/films/liste.html.twig -->
-{% extends 'base.html.twig' %}
-
-{% block title %}Liste des films{% endblock %}
-
-{% block stylesheets %}
-	{{ parent() }}
-	<link rel="stylesheet" href="/css/films.css">
-{% endblock %}
-
-{% block contenu %}
-	<div class="page-header">
-		<h1>Tous nos films</h1>
-		<p>{{ films|length }}
-			film
-			{% if films|length > 1 %}s
-			{% endif %}
-			disponible
-			{% if films|length > 1 %}s
-			{% endif %}
-		</p>
-	</div>
-
-	<!-- Filtres -->
-	<aside class="filtres">
-		<h3>Filtrer par</h3>
-
-		<div class="filtre-groupe">
-			<h4>Genre</h4>
-			<ul>
-				{% for genre in genres %}
-					<li>
-						<label>
-							<input type="checkbox" name="genre[]" value="{{ genre.id }}">
-							{{ genre.nom }}
-						</label>
+					<li class="page-item {{ pageActuelle <= 1 ? 'disabled' }}">
+						<a class="page-link" href="{{ path('films_list', app.request.query.all|merge({'page': pageActuelle - 1})) }}">
+							Précédent
+						</a>
 					</li>
-				{% endfor %}
-			</ul>
-		</div>
 
-		<div class="filtre-groupe">
-			<h4>Année</h4>
-			<select name="annee">
-				<option value="">Toutes</option>
-				{% for annee in 2024..2020 %}
-					<option value="{{ annee }}">{{ annee }}</option>
-				{% endfor %}
-			</select>
-		</div>
-	</aside>
+					{% for i in 1..totalPages %}
+						<li class="page-item {{ i == pageActuelle ? 'active' }}">
+							<a class="page-link" href="{{ path('films_list', app.request.query.all|merge({'page': i})) }}">
+								{{ i }}
+							</a>
+						</li>
+					{% endfor %}
 
-	<!-- Grille de films -->
-	<div class="films-container">
-		<div class="films-grid">
-			{% for film in films %}
-				{% include 'composants/card-film.html.twig' with {'film': film} %}
-			{% else %}
-				<div class="aucun-resultat">
-					<p>Aucun film ne correspond à vos critères.</p>
-				</div>
-			{% endfor %}
-		</div>
+					<li class="page-item {{ pageActuelle >= totalPages ? 'disabled' }}">
+						<a class="page-link" href="{{ path('films_list', app.request.query.all|merge({'page': pageActuelle + 1})) }}">
+							Suivant
+						</a>
+					</li>
 
-		<!-- Pagination -->
-		{% if pageMax > 1 %}
-			<nav class="pagination">
-				{% if pageActuelle > 1 %}
-					<a href="?page={{ pageActuelle - 1 }}">« Précédent</a>
-				{% endif %}
-
-				{% for numero in 1..pageMax %}
-					<a href="?page={{ numero }}" class="{% if numero == pageActuelle %}active{% endif %}">
-						{{ numero }}
-					</a>
-				{% endfor %}
-
-				{% if pageActuelle < pageMax %}
-					<a href="?page={{ pageActuelle + 1 }}">Suivant »</a>
-				{% endif %}
+				</ul>
 			</nav>
 		{% endif %}
 	</div>
 {% endblock %}
-
- #}

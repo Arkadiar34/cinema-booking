@@ -7,7 +7,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use App\Validator\SeanceDisponible;
 
+#[SeanceDisponible]
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
 class Reservation
 {
@@ -16,7 +19,7 @@ class Reservation
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255,unique:true)]
+    #[ORM\Column(length: 255, unique: true)]
     private ?string $numeroReservation = null;
 
     #[ORM\Column]
@@ -33,6 +36,7 @@ class Reservation
 
     #[ORM\ManyToOne(inversedBy: 'reservations')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotBlank(message: 'La séance est obligatoire')]
     private ?seance $seance = null;
 
     /**
@@ -40,6 +44,26 @@ class Reservation
      */
     #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'reservation')]
     private Collection $tickets;
+
+    #[ORM\ManyToOne(inversedBy: 'reservations')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotBlank(message: 'Le film est obligatoire')]
+    private ?Film $film = null;
+
+    #[ORM\Column]
+    #[Assert\NotBlank(message: 'Le nombre de places est obligatoire')]
+    #[Assert\Positive(message: 'Le nombre de places doit être positif')]
+    #[Assert\Range(
+        min: 1,
+        max: 10,
+        notInRangeMessage: 'Vous devez réserver entre {{ min }} et {{ max }} places'
+    )]
+    private ?int $nbPlaces = null;
+
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Email(message: 'L\'adresse email {{ value }} n\'est pas valide')]
+    private ?string $emailClient = null;
 
     public function __construct()
     {
@@ -149,6 +173,42 @@ class Reservation
                 $ticket->setReservation(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getFilm(): ?Film
+    {
+        return $this->film;
+    }
+
+    public function setFilm(?Film $film): static
+    {
+        $this->film = $film;
+
+        return $this;
+    }
+
+    public function getNbPlaces(): ?int
+    {
+        return $this->nbPlaces;
+    }
+
+    public function setNbPlaces(int $nbPlaces): static
+    {
+        $this->nbPlaces = $nbPlaces;
+
+        return $this;
+    }
+
+    public function getEmailClient(): ?string
+    {
+        return $this->emailClient;
+    }
+
+    public function setEmailClient(string $emailClient): static
+    {
+        $this->emailClient = $emailClient;
 
         return $this;
     }

@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Film;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 
 /**
  * @extends ServiceEntityRepository<Film>
@@ -16,19 +17,9 @@ class FilmRepository extends ServiceEntityRepository
         parent::__construct($registry, Film::class);
     }
 
-    /*     public function findAllWithSeances(): array
-    {
-        return $this->createQueryBuilder('f')
-
-            ->leftJoin('f.seances', 's')
-            ->addSelect('s')
-            ->leftJoin('s.salle', 'sa')
-            ->addSelect('sa')
-            ->getQuery()
-            ->getResult();
-    } */
-
-    public function findAllWithSeances(?array $criteria = []): array
+    //J'ai fait le choix d'une seul fonction qui s'auto alimente selon les paramètre en url plutot que 
+    //plusieur sous fonction, je trouvais sa plus propre niveau du code et plus condensé
+    public function findBySearchCriteria(?array $criteria = [], int $page = 1, int $limit = 12): Paginator
     {
         $qb = $this->createQueryBuilder('f')
             ->leftJoin('f.seances', 's')
@@ -40,62 +31,33 @@ class FilmRepository extends ServiceEntityRepository
                 ->setParameter('genre', $criteria['genre']);
         }
         if (!empty($criteria['titre'])) {
-            $qb->andWhere('f.titre = :titre')
-                ->setParameter('titre', $criteria['titre']);
+            $qb->andWhere('f.titre LIKE :titre')
+                ->setParameter('titre', '%' . $criteria['titre'] . '%');
         }
         if (!empty($criteria['dateSeance'])) {
-            $qb->andWhere('s.dateHeure = :dateSeance')
-                ->setParameter('dateSeance', $criteria['dateSeance']);
+            $qb->andWhere('DATE(s.dateHeure) = :dateSeance')
+                ->setParameter('dateSeance', $criteria['dateSeance']->format('Y-m-d'));
         }
-        if(!empty($criteria['salle'])) {
+        if (!empty($criteria['salle'])) {
             $qb->andWhere('sa = :salle')
-                ->setParameter('salle',$criteria['salle']);
+                ->setParameter('salle', $criteria['salle']);
         }
-        return $qb->getQuery()
-            ->getResult();
+        $query = $qb->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery();
+
+        return new Paginator($query, true);
     }
-//Fonction pour trouver tout les genres de film distinct, pour qu'ils soient toujours a jour avec les films dispo, 
-//et pas une liste alimenté manuellement
-    public function findDistinctGenres():array 
+    //Fonction pour trouver tout les genres de film distinct, pour qu'ils soient toujours a jour avec les films dispo, 
+    //et pas une liste alimenté manuellement
+    public function findDistinctGenres(): array
     {
         $resultats = $this->createQueryBuilder('f')
             ->select('DISTINCT f.genre')
             ->where('f.genre IS NOT NULL')
-            ->orderBy('f.genre','ASC')
+            ->orderBy('f.genre', 'ASC')
             ->getQuery()
             ->getScalarResult();
-        return array_column($resultats,'genre');
+        return array_column($resultats, 'genre');
     }
-/*     public function findFilmBySalle() {
-        $qb = $this->createQueryBuilder('f')
-            ->leftJoin('f.seances', 's')
-            ->addSelect('s')
-            ->leftJoin('s.salle', 'sa')
-            ->addSelect('sa');
-
-    } */
-    //    /**
-    //     * @return Film[] Returns an array of Film objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('f')
-    //            ->andWhere('f.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('f.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Film
-    //    {
-    //        return $this->createQueryBuilder('f')
-    //            ->andWhere('f.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }
